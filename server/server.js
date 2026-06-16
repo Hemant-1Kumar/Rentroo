@@ -1,22 +1,29 @@
-import express from "express"
-import cors from "cors"
-import "dotenv/config"
-import connectDB from "./config/mondodb.js"
-import { clerkMiddleware } from '@clerk/express'
-import clerkWebhooks from "./controllers/clerkWebhooks.js"
+import express from "express";
+import cors from "cors";
+import "dotenv/config";
+import connectDB from "./config/mondodb.js";
+import { clerkMiddleware } from "@clerk/express";
+import clerkWebhooks from "./controllers/clerkWebhooks.js";
 
-await connectDB()
+await connectDB();
 
-const app= express()
-app.use(cors())
+const app = express();
 
-app.use("/api/clerk",clerkWebhooks)
+app.use(cors());
+app.use(express.json());
 
-app.use(express.json())
-app.use(clerkMiddleware())
+// Webhook Route
+app.use("/api/clerk", clerkWebhooks);
 
-app.get('/',(req,res)=>res.send("API SUCCESSFULLY CONNECTED"))
+// Clerk Middleware
+app.use(clerkMiddleware());
 
-const port=process.env.PORT || 4000
+app.get("/", (req, res) => {
+  res.send("API SUCCESSFULLY CONNECTED");
+});
 
-app.listen(port,()=>console.log(`server is running at ${port}`))
+const port = process.env.PORT || 4000;
+
+app.listen(port, () => {
+  console.log(`Server is running at ${port}`);
+});
