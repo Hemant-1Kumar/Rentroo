@@ -15,7 +15,8 @@ const clerkWebhooks = async (req, res) => {
 
     const { data, type } = req.body;
 
-    console.log("Webhook Event:", type);
+    console.log("Webhook Type:", type);
+    console.log("Webhook Data:", data);
 
     switch (type) {
       case "user.created": {
@@ -27,9 +28,11 @@ const clerkWebhooks = async (req, res) => {
           recentSearchedCities: "",
         };
 
+        console.log("Creating User:", userData);
+
         await User.create(userData);
 
-        console.log("User Created:", userData);
+        console.log("User Created Successfully");
         break;
       }
 
@@ -40,16 +43,20 @@ const clerkWebhooks = async (req, res) => {
           image: data.image_url,
         };
 
+        console.log("Updating User:", data.id);
+
         await User.findByIdAndUpdate(data.id, userData);
 
-        console.log("User Updated:", data.id);
+        console.log("User Updated Successfully");
         break;
       }
 
       case "user.deleted": {
+        console.log("Deleting User:", data.id);
+
         await User.findByIdAndDelete(data.id);
 
-        console.log("User Deleted:", data.id);
+        console.log("User Deleted Successfully");
         break;
       }
 
@@ -58,15 +65,15 @@ const clerkWebhooks = async (req, res) => {
         break;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Webhook Received",
     });
   } catch (error) {
-    console.log("WEBHOOK ERROR:");
+    console.log("FULL WEBHOOK ERROR:");
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
