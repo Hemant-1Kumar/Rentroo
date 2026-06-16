@@ -3,6 +3,11 @@ import { Webhook } from "svix";
 
 const clerkWebhooks = async (req, res) => {
   try {
+    console.log(
+      "CLERK_WEBHOOK_SECRET exists:",
+      !!process.env.CLERK_WEBHOOK_SECRET
+    );
+
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
     const headers = {
@@ -16,7 +21,6 @@ const clerkWebhooks = async (req, res) => {
     const { data, type } = req.body;
 
     console.log("Webhook Type:", type);
-    console.log("Webhook Data:", data);
 
     switch (type) {
       case "user.created": {
@@ -43,8 +47,6 @@ const clerkWebhooks = async (req, res) => {
           image: data.image_url,
         };
 
-        console.log("Updating User:", data.id);
-
         await User.findByIdAndUpdate(data.id, userData);
 
         console.log("User Updated Successfully");
@@ -52,8 +54,6 @@ const clerkWebhooks = async (req, res) => {
       }
 
       case "user.deleted": {
-        console.log("Deleting User:", data.id);
-
         await User.findByIdAndDelete(data.id);
 
         console.log("User Deleted Successfully");
