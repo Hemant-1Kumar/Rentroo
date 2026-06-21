@@ -49,7 +49,7 @@ const Dashboard = () => {
         <div className='flex items-center gap-7 p-5 bg-primaryTwo lg:min-w-56 rounded-xl'>
           <img src={assets.carBlack} alt="" className='hidden sm:flex w-8' />
           <div>
-            <h4>{dashboardData?.totalRevenue || 0}</h4>
+            <h4>{currency}{dashboardData?.totalRevenue || 0}</h4>
             <h5 className='text-solid'>Total Earning</h5>
           </div>
         </div>
