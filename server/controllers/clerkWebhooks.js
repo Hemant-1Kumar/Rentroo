@@ -3,11 +3,6 @@ import { Webhook } from "svix";
 
 const clerkWebhooks = async (req, res) => {
   try {
-    console.log(
-      "CLERK_WEBHOOK_SECRET exists:",
-      !!process.env.CLERK_WEBHOOK_SECRET
-    );
-
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
     const headers = {
@@ -16,17 +11,11 @@ const clerkWebhooks = async (req, res) => {
       "svix-signature": req.headers["svix-signature"],
     };
 
-    console.log("Headers:", headers);
-
     const payload = JSON.stringify(req.body);
-
-    console.log("Payload exists:", !!payload);
 
     await whook.verify(payload, headers);
 
     const { data, type } = req.body;
-
-    console.log("Webhook Type:", type);
 
     switch (type) {
       case "user.created": {
@@ -38,11 +27,7 @@ const clerkWebhooks = async (req, res) => {
           recentSearchedCities: "",
         };
 
-        console.log("Creating User:", userData);
-
         await User.create(userData);
-
-        console.log("User Created Successfully");
         break;
       }
 
@@ -54,20 +39,15 @@ const clerkWebhooks = async (req, res) => {
         };
 
         await User.findByIdAndUpdate(data.id, userData);
-
-        console.log("User Updated Successfully");
         break;
       }
 
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-
-        console.log("User Deleted Successfully");
         break;
       }
 
       default:
-        console.log("Unhandled Event:", type);
         break;
     }
 
@@ -76,9 +56,6 @@ const clerkWebhooks = async (req, res) => {
       message: "Webhook Received",
     });
   } catch (error) {
-    console.log("FULL WEBHOOK ERROR:");
-    console.log(error);
-
     return res.status(500).json({
       success: false,
       message: error.message,

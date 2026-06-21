@@ -8,7 +8,7 @@ const Banner = () => {
 
 
   return (
-    <section className='max-padd-container py-10'>
+    <section className='max-padd-container py-10 pt-22'>
       <div className='max-padd-container bg-solid rounded-3xl
       xl:max-h-72'>
         {/*CONTAINER*/ }

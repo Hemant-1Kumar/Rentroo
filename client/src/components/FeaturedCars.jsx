@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import {Link} from "react-router-dom";
-import {assets,cities,dummyCars} from "../assets/data";
+import {assets,cities} from "../assets/data";
 import Title from './Title';
 import Item from './Item';
 
@@ -9,17 +9,19 @@ import {Swiper,SwiperSlide} from "swiper/react";
 import "swiper/css";
 
 import {Autoplay} from 'swiper/modules';
+import { useAppContext } from '../context/AppContext';
 
 const FeaturedCars = () => {
+  const {cars}= useAppContext()
   const [featured,setFeatured] = useState([])
 
   useEffect(()=>{
-    const data = dummyCars.filter((car)=> cities.includes(car.city))
+    const data = cars.filter((car)=> cities.includes(car.city))
     setFeatured(data)
-  },[])
+  },[cars])
 
   return (
-    <section className='max-padd-container pt-16 xl:py-28'>
+    <section className='max-padd-container pt-16 xl:py-22'>
       <Title
         title1={"Your next car Awaits"}
         title2={"Start Driving With Ease"}

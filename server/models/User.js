@@ -12,8 +12,8 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     recentSearchedCities: {
-      type: String,
-      default: "",
+      type: [String],
+      default: [],
     },
   },
   { timestamps: true }

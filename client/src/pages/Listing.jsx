@@ -1,11 +1,12 @@
 import React,{useState,useMemo} from 'react'
 import {useSearchParams} from "react-router-dom"
 import Item from "../components/Item"
-import { dummyCars } from '../assets/data'
+import { useAppContext } from '../context/AppContext'
 
 
 
 const Listing=()=> {
+  const {cars,searchQuery,currency}=useAppContext()
   const [selectedFilters,setSelectedFilters]=useState({
     bodyType:[],
     priceRange:[]
@@ -13,8 +14,6 @@ const Listing=()=> {
   const [selectedSort, setSelectedSort]=useState("")
   const [currPage,setCurrPage]=useState(1)
   const itemsPerPage=6
-  const currency="$"
-  const[searchQuery,setSearchQuery]=useState("")
 
   const [searchParams]= useSearchParams()
   const heroDestination=(searchParams.get("destination")||"").toLowerCase().trim()
@@ -93,13 +92,13 @@ const Listing=()=> {
 
   // Filtered & Sorted cars
   const filteredCars = useMemo(()=>{
-    return dummyCars.filter((c)=>
+    return cars.filter((c)=>
     matchesType(c)&&
     matchesPrice(c)&&
     matchesSearch(c)&&
     matchesHeroDestination(c)
     ).sort(sortCars)
-  },[dummyCars,selectedFilters,selectedSort,searchQuery,heroDestination])
+  },[cars,selectedFilters,selectedSort,searchQuery,heroDestination])
 
 
 

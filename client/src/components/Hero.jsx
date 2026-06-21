@@ -1,7 +1,29 @@
-import React from 'react'
-import { assets, cities } from '../assets/data'
+import React, { useState } from 'react'
+import { assets } from '../assets/data'
+import { useAppContext } from '../context/AppContext'
 
 const Hero = () => {
+  const {navigate,searchedCities,setSearchedCities,axios,getToken}=useAppContext()
+  const [destination,setDestination]=useState("")
+
+  const onSearch=async(e)=>{
+    e.preventDefault()
+    navigate(`/listing?destination=${destination}`)
+
+    await axios.post('/api/user/store-recent-search',{recentSearchedCities:destination},{headers:{Authorization:`Bearer ${await getToken()}`}})
+
+    setSearchedCities((prevSearchedCities)=>{
+      const updatedSearchedCities=[...prevSearchedCities,destination]
+      if(updatedSearchedCities.length>3){
+        updatedSearchedCities.shift()
+      }
+      return updatedSearchedCities;
+    })
+
+  }
+
+
+
   return (
     <section className='bg-primary'>
 
@@ -22,7 +44,8 @@ const Hero = () => {
           </div>
 
           {/* Search/Booking Form */}
-          <form
+          <form 
+          onSubmit={onSearch}
   className="bg-white text-gray-500 rounded-md md:rounded-full
   px-6 md:pl-12 py-3 flex flex-col md:flex-row
   gap-6 lg:gap-x-12 max-w-md md:max-w-5xl
@@ -37,6 +60,8 @@ const Hero = () => {
     </div>
 
     <input
+      onChange={(e)=>setDestination(e.target.value)}
+      value={destination}
       list="destinations"
       id="destinationInput"
       type="text"
@@ -46,7 +71,7 @@ const Hero = () => {
     />
 
     <datalist id="destinations">
-      {cities.map((city, index) => (
+      {searchedCities.map((city, index) => (
         <option key={index} value={city} />
       ))}
     </datalist>

@@ -1,25 +1,79 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { assets, dummyCars } from "../assets/data";
+import { useParams } from "react-router-dom";
+import { assets } from "../assets/data";
 import CarImages from "../components/CarImages";
+import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const CarDetails = () => {
+  const { currency, cars, navigate, axios, getToken } = useAppContext();
   const [car, setCar] = useState(null);
   const { id } = useParams();
   const [pickUpDate, setPickUpDate] = useState(null);
   const [dropOffDate, setDropOffDate] = useState(null);
   const [isAvailable, setIsAvailable] = useState(false);
-  const currency = "$";
-  const navigate = useNavigate();
+
+  const checkAvailability = async () => {
+    try {
+      if (pickUpDate > dropOffDate) {
+        toast.error("PickUpDate should be less than dropOffDate ");
+      }
+
+      const { data } = await axios.post("/api/bookings/check-availability", {
+        car: id,
+        pickUpDate,
+        dropOffDate,
+      });
+      if (data.success) {
+        if (data.isAvailable) {
+          setIsAvailable(true);
+          toast.success("Car is Available");
+        } else {
+          setIsAvailable(false);
+          toast.success("Car is not Available");
+        }
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (!isAvailable) {
+        return checkAvailability();
+      } else {
+        const { data } = await axios.post(
+          "/api/bookings/book",
+          { car: id, pickUpDate, dropOffDate },
+          { headers: { Authorization: `Bearer ${await getToken()}` } },
+        );
+
+        if (data.success) {
+          toast.success(data.message);
+          navigate("/my-bookings");
+          scrollTo(0, 0);
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
-    if (dummyCars && dummyCars.length > 0) {
-      const foundCar = dummyCars.find((c) => c._id === id);
+    if (cars && cars.length > 0) {
+      const foundCar = cars.find((c) => c._id === id);
       if (foundCar) {
         setCar(foundCar);
       }
     }
-  }, [id]);
+  }, [cars, id]);
 
   return (
     car && (
@@ -92,15 +146,14 @@ const CarDetails = () => {
               </div>
 
               {/* FORM CHECK AVAILABILITY */}
-              <form onSubmit="" className="text-gray-500 bg-primary rounded-lg px-6 py-4 flex flex-col lg:flex-row gap-4
-              max-w-md lg:max-w-full ring-1 ring-slate-900/5 relative mt-10">
+              <form
+                onSubmit={onSubmitHandler}
+                className="text-gray-500 bg-primary rounded-lg px-6 py-4 flex flex-col lg:flex-row gap-4
+              max-w-md lg:max-w-full ring-1 ring-slate-900/5 relative mt-10"
+              >
                 <div className="flex flex-col w-full">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={assets.calendar}
-                      alt="calendarIcon"
-                      width={20}
-                    />
+                    <img src={assets.calendar} alt="calendarIcon" width={20} />
                     <label htmlFor="pickUpDate"> Pick Up</label>
                   </div>
 
@@ -115,11 +168,7 @@ const CarDetails = () => {
 
                 <div className="flex flex-col w-full">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={assets.calendar}
-                      alt="calendarIcon"
-                      width={20}
-                    />
+                    <img src={assets.calendar} alt="calendarIcon" width={20} />
                     <label htmlFor="dropOffDate"> Drop Off</label>
                   </div>
 
@@ -133,7 +182,7 @@ const CarDetails = () => {
                   />
                 </div>
 
-                <button className="flexCenter gap-1 rounded-md btn-solid min-w-44">
+                <button type="submit" className="flexCenter gap-1 rounded-md btn-solid min-w-44">
                   <img
                     src={assets.search}
                     alt="searchIcon"
@@ -152,7 +201,9 @@ const CarDetails = () => {
                     <div>
                       <div className="flex items-center space-x-2">
                         <h5>{car.agency.name}</h5>
-                        <p className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-600 border border-green-500/30">Agency</p>
+                        <p className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-600 border border-green-500/30">
+                          Agency
+                        </p>
                       </div>
 
                       <p>Agency Office</p>
@@ -179,11 +230,11 @@ const CarDetails = () => {
                   </div>
                   <div className="flex items-center divide-x divide-gray-500/30">
                     <button className="flex items-center justify-center gap-2 w-1/2 py-3 cursor-pointer">
-                      <img src={assets.mail} alt="" width={19}/>
+                      <img src={assets.mail} alt="" width={19} />
                       Send Email
                     </button>
                     <button className="flex items-center justify-center gap-2 w-1/2 py-3 cursor-pointer">
-                      <img src={assets.phone}alt="" width={19}/>
+                      <img src={assets.phone} alt="" width={19} />
                       Call Now
                     </button>
                   </div>
@@ -193,7 +244,7 @@ const CarDetails = () => {
 
             {/* IMAGES RIGHT SIDE */}
             <div className="flex flex-[4] w-full bg-white p-4 rounded-xl my-4">
-              <CarImages car={car}/>
+              <CarImages car={car} />
             </div>
           </div>
         </div>

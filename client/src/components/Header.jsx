@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-
+import { Link, useLocation } from 'react-router-dom'
 import { assets } from "../assets/data"
 import Navbar from './Navbar'
-import { useUser, useClerk, UserButton } from '@clerk/clerk-react'
+import { useClerk, UserButton } from '@clerk/clerk-react'
+import { useAppContext } from '../context/AppContext'
 
 const Header = () => {
-
+  const {navigate,user,isOwner,setShowAgencyReg,searchQuery,setSearchQuery}=useAppContext()
   const [menuOpened, setMenuOpened] = useState(false)
   const [active, setActive] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
-
   const location = useLocation()
-  const { user } = useUser()
   const { openSignIn } = useClerk()
-  const navigate = useNavigate()
 
   const BookingIcon = () => (
     <svg
@@ -38,6 +35,14 @@ const Header = () => {
   const isHomePage = location.pathname === "/"
 
   const toggleMenu = () => setMenuOpened(prev => !prev)
+
+  const handleSearchChange=(e)=>{
+    setSearchQuery(e.target.value)
+
+    if(e.target.value && location.pathname !== "/listing"){
+      navigate("/listing")
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,7 +101,13 @@ const Header = () => {
 
           {/* BUTTONS + SEARCH + PROFILE */}
           <div className='flex sm:flex-1 items-center sm:justify-end gap-x-4 sm:gap-x-8'>
-
+            {user &&(
+              <button onClick={()=> isOwner?navigate("/owner"):setShowAgencyReg(true)}
+              className=' btn-outline px-2 py-1 text-xs font-semibold ring-primary bg-transparent'
+              >
+                {isOwner ? "Dashboard":"Register Agency"}
+              </button>
+            )}
             {/* SEARCH BAR */}
             <div className='relative hidden xl:flex items-center'>
 
@@ -111,6 +122,8 @@ const Header = () => {
                 }`}
               >
                 <input
+                  onChange={handleSearchChange}
+                  value={searchQuery}
                   type="text"
                   placeholder='Type here...'
                   className='w-full text-sm outline-none pr-10 placeholder:text-gray-400'
