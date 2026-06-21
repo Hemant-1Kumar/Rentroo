@@ -9,6 +9,7 @@ import agencyRouter from "./routes/agencyRoute.js";
 import connectCloudinary from "./config/cloudinary.js";
 import carRouter from "./routes/carRoute.js"
 import bookingRouter from "./routes/bookingRoute.js";
+import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 
 await connectDB();
 await connectCloudinary();
@@ -16,6 +17,8 @@ await connectCloudinary();
 const app = express();
 
 app.use(cors());
+
+app.post('/api/stripe',express.raw({type:"application/json"}),stripeWebhooks)
 app.use(express.json());
 
 // Webhook Route

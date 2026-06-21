@@ -87,7 +87,7 @@ export const bookingCreate = async (req, res) => {
             `,
     };
 
-    await transporter.sendMail(mailOption)
+    await transporter.sendMail(mailOption);
 
     res.json({ success: true, message: "Booking Created" });
   } catch (error) {
@@ -145,34 +145,40 @@ export const getAgencyBookings = async (req, res) => {
 
 export const bookingStripePayment = async (req, res) => {
   try {
-    const {bookingId}=req.body
-    const booking= await Booking.findById(bookingId)
-    const carData= await Car.findById(booking.car).populate("agency")
-    const totalPrice = booking.totalPrice
-    const {origin}=req.headers
+    const { bookingId } = req.body;
+    const booking = await Booking.findById(bookingId);
+    const carData = await Car.findById(booking.car).populate("agency");
+    const totalPrice = booking.totalPrice;
+    const { origin } = req.headers;
 
-    const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
-    const line_items=[
-        {
-            price_data:{
-                currency:"usd",
-                product_data:{name:carData.agency.name},
-                unit_amount: totalPrice*100,
-            },
-            quantity:1,
-        }
-    ]
+    const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+    const line_items = [
+      {
+        price_data: {
+          currency: "usd",
+          unit_amount: totalPrice * 100,
+          product_data: {
+            name: carData.title,
+          },
+        },
+        quantity: 1,
+      },
+    ];
 
     const session = await stripeInstance.checkout.sessions.create({
-        line_items,
-        mode:"payment",
-        success_url: `${origin}/processing/my-bookings`,
-        cancel_url: `${origin}/my-bookings`,
-        metadata:{bookingId}
-    })
+      payment_method_types: ["card"],
+      line_items,
+      mode: "payment",
+      success_url: `${origin}/processing/my-bookings`,
+      cancel_url: `${origin}/my-bookings`,
+      metadata: {
+        bookingId,
+      },
+    });
 
-    res.json({success:true, url:session.url})
+    res.json({ success: true, url: session.url });
   } catch (error) {
-    res.json({success: false, message:"Payment Failed"})
+    console.log(error);
+    res.json({ success: false, message: error.message });
   }
 };
